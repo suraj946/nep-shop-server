@@ -9,6 +9,9 @@
     "dev": "export NODE_ENV=development && nodemon server.js",
     "start": "node server.js"
   },
+  "engines": {
+    "node": ">=14.20.1"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
