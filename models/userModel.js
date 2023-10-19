@@ -33,7 +33,7 @@ const schema = new mongoose.Schema({
         required:true
     },
     pinCode:{
-        type:Number,
+        type:String,
     },
     phone:{
         type:String,

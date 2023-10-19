@@ -73,22 +73,36 @@ export const logout = catchAsyncError((req, res, next) => {
     });
 });
 
-export const updatePassword = catchAsyncError(async(req, res, next)=>{
+export const updateProfile = catchAsyncError(async(req, res, next)=>{
   const user = await User.findById(req.user._id);
   const {name, email, address, city, pinCode, country, phone} = req.body;
 
-  if(name) user.name = name;
-  if(email) user.email = email;
-  if(address) user.address = address;
-  if(city) user.city = city;
-  if(pinCode) user.pinCode = pinCode;
-  if(country) user.country = country;
-  if(phone) user.phone = phone;
+  if(name){
+    user.name = name;
+  }
+  if(email){
+    user.email = email;
+  }
+  if(address){
+    user.address = address;
+  }
+  if(city){
+    user.city = city;
+  }
+  if(pinCode){
+    user.pinCode = pinCode;
+  }
+  if(country){
+    user.country = country;;
+  }
+  if(phone){
+    user.phone = phone;
+  }
 
   await user.save();
   res.status(200).json({
-      success:true,
-      message:"Profile updated successfully"
+    success:true,
+    message:"Profile updated successfully",
   });
 });
 
@@ -112,26 +126,30 @@ export const changePassword = catchAsyncError(async(req, res, next)=>{
 
 export const updatePic = catchAsyncError(async(req, res, next)=>{
   const user = await User.findById(req.user._id);
-  await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+  if(user.avatar.public_id){
+    await cloudinary.v2.uploader.destroy(user.avatar.public_id);
+  }
 
   const fileAsDataUri = getDataUri(req.file);
   const myCloud = await cloudinary.v2.uploader.upload(fileAsDataUri.content, {folder: "nepShopAvatars"});
-
-  user.avatar={
+  const avatarInfo = {
     public_id : myCloud.public_id,
     url : myCloud.secure_url
   }
+
+  user.avatar = avatarInfo;
   await user.save();
   res.status(200).json({
     success:true,
-    message:"Profile pic updated"
+    message:"Profile pic updated",
+    avatarInfo
   });
 });
 
 export const forgotPassword = catchAsyncError(async(req, res, next) => {
   const {email} = req.body;
   const user = await User.findOne({email});
-  if(!user) return next(new ErrorHandler("User not found", 404));
+  if(!user) return next(new ErrorHandler("No user found assosiated with this email", 404));
   
   const otp = Math.floor(Math.random() * (999999-100000)+100000);
   const otp_expire = 15*60*1000;

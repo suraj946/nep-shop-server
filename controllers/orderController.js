@@ -85,20 +85,25 @@ export const processOrder = catchAsyncError(async(req, res, next)=>{
     const order = await Order.findById(req.params.orderId);
     if(!order) return next(new ErrorHandler("Order not found", 404));
 
+    let updatedStatus = order.orderStatus;
+
     if(order.orderStatus === "Processing"){
         order.orderStatus = "Shipped";
+        updatedStatus = "Shipped";
     }else if(order.orderStatus === "Shipped"){
         order.orderStatus = "Delivered";
         order.deliveredAt = new Date(Date.now());
+        updatedStatus = "Delivered"
     }else{
-        return next(new ErrorHandler("The order has already been delivered", 400));
+        return next(new ErrorHandler("This order has already been delivered", 400));
     }
 
     await order.save();
 
     res.status(200).json({
         success:true,
-        message:"Order status has been changed successfully"
+        message:"Order status has been changed successfully",
+        updatedStatus
     })
 })
 

@@ -122,7 +122,7 @@ export const addImage = catchAsyncError(async (req, res, next) => {
   const myCloud = await cloudinary.v2.uploader.upload(fileAsDataUri.content, {
     folder: "nepShopProductImg",
   });
-  const image = {
+  let image = {
     public_id: myCloud.public_id,
     url: myCloud.secure_url,
   };
@@ -130,9 +130,12 @@ export const addImage = catchAsyncError(async (req, res, next) => {
   product.images.push(image);
   await product.save();
 
+  image = product.images.filter(i => i.public_id === image.public_id)[0];
+
   res.status(200).json({
     success:true,
-    message:"Image added to the product successfully"
+    message:"Image added to the product successfully",
+    image
   });
 
 });
@@ -173,15 +176,16 @@ export const deleteProduct = catchAsyncError(async(req, res, next)=>{
 
     res.status(200).json({
         success:true,
-        message:"Image deleted successfully",
+        message:"Product deleted successfully",
     });
 });
 
 export const addCategory = catchAsyncError(async(req, res, next)=>{
-    await Category.create(req.body);
+    const category = await Category.create(req.body);
     res.status(200).json({
         success:true,
-        message:"Category Added successfully"
+        message:"Category Added successfully",
+        category
     });
 });
 
