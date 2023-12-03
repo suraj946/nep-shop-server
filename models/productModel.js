@@ -30,6 +30,32 @@ const schema = new mongoose.Schema({
     createdAt:{
         type:Date,
         default:Date.now
+    },
+    isFeatured:{
+        type:Boolean,
+        default:false
+    },
+    discount:{
+        type:Number,
+        default:0
+    },
+    averageRating:{
+        type:Number,
+        default:0
+    },
+    reviews:[
+        {
+            user:{
+                type:mongoose.Schema.Types.ObjectId,
+                ref:"User"
+            },
+            reviewText:String,
+            rating:Number
+        }
+    ],
+    isNewArrival:{
+        type:Boolean,
+        default:true
     }
 
 });

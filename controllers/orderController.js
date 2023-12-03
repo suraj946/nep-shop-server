@@ -55,8 +55,12 @@ export const createOrder = catchAsyncError(async (req, res, next) => {
 });
 
 export const getMyOrders = catchAsyncError(async(req, res, next)=>{
-    const orders = await Order.find({user:req.user._id});
-
+    const status = req.query.status;
+    const query = {};
+    if(status){
+        query["orderStatus"] = status;
+    }
+    const orders = await Order.find({user:req.user._id, ...query}).sort({createdAt:-1});
     res.status(200).json({
         success:true,
         orders
@@ -64,8 +68,16 @@ export const getMyOrders = catchAsyncError(async(req, res, next)=>{
 })
 
 export const getAdminOrders = catchAsyncError(async(req, res, next)=>{
-    const orders = await Order.find({});
-
+    const status = req.query.status;
+    const query = {};
+    if(status){
+        if(status === "New"){
+            query["isNewOrder"] = true;
+        }else{
+            query["orderStatus"] = status;
+        }
+    }
+    const orders = await Order.find(query).sort({createdAt:-1});
     res.status(200).json({
         success:true,
         orders
@@ -73,8 +85,16 @@ export const getAdminOrders = catchAsyncError(async(req, res, next)=>{
 })
 
 export const getOrderDetails = catchAsyncError(async(req, res, next)=>{
-    const order = await Order.findById(req.params.orderId);
+    const order = await Order.findById(req.params.orderId).populate("user", "name email avatar");
     if(!order) return next(new ErrorHandler("Order not found", 404));
+
+    if(req.user.role === "admin"){
+        if(order.isNewOrder){
+            order.isNewOrder = false;
+            await order.save();
+        }
+    }
+
     res.status(200).json({
         success:true,
         order
